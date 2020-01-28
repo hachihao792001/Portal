@@ -60,7 +60,7 @@ public class FPSController : MonoBehaviour
         rb.velocity = transform.parent.TransformDirection(new Vector3(input.x, rb.velocity.y, input.y));
 
         //Jumping
-        grounded = Physics.Raycast(transform.position, Vector3.down, groundDistance);
+        grounded = Physics.Raycast(transform.parent.position, Vector3.down, groundDistance);
         if(grounded && Input.GetKeyDown(KeyCode.Space))
             rb.AddForce(Vector3.up * jumpForce);
     }

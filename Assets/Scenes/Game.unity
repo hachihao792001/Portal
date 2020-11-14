@@ -1456,7 +1456,7 @@ GameObject:
   - component: {fileID: 923352890}
   m_Layer: 9
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1728,7 +1728,7 @@ MonoBehaviour:
   input: {x: 0, y: 0}
   walkSpeed: 3
   running: 0
-  groundDistance: 1.81
+  groundDistance: 1.1
   grounded: 0
   jumpForce: 200
 --- !u!114 &963194230

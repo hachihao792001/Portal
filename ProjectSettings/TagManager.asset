@@ -7,6 +7,7 @@ TagManager:
   - PlayerCenter
   - GoableThruPortal
   - Props
+  - Ground
   layers:
   - Default
   - TransparentFX

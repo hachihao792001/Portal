@@ -1,20 +1,23 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System.Globalization;
 
-public class Export : MonoBehaviour
+public class ExportToMyEngine : MonoBehaviour
 {
-    public static Export Instance;
+    public static ExportToMyEngine Instance;
     private void Awake()
     {
         Instance = this;
     }
     [SerializeField] List<GameObject> gos;
-    [MenuItem("CONTEXT/Export/ExportData")]
-    public static void ExportData(){
-        string res="";
-        List<GameObject> gos=  Instance.gos;
-        for(int i=0; i<gos.Count; i++){
+    [MenuItem("CONTEXT/ExportToMyEngine/ExportData")]
+    public static void ExportData()
+    {
+        string res = "[";
+        List<GameObject> gos = Instance.gos;
+        for (int i = 0; i < gos.Count; i++)
+        {
             MeshFilter mf = gos[i].GetComponent<MeshFilter>();
             MeshRenderer mr = gos[i].GetComponent<MeshRenderer>();
 
@@ -25,22 +28,23 @@ public class Export : MonoBehaviour
             Vector3 euler = ToRasterizerEuler(rotation);
 
             res += "new GameObject(";
-            res+= $"new Vector3({tr.position.x}, {tr.position.y}, {tr.position.z}),";
-            res+= $"new Vector3({euler.x}, {euler.y}, {euler.z}),";
-            res+= $"new Vector3({tr.lossyScale.x}, {tr.lossyScale.y}, {tr.lossyScale.z}),";
-            res+= "new Color(0, 255, 0),";
-            if(isQuad)
-                res+= "quadMesh,";
+            res += $"new Vector3({toNiceString(tr.position.x)}, {toNiceString(tr.position.y)}, {toNiceString(tr.position.z)}),";
+            res += $"new Vector3({toNiceString(euler.x)}, {toNiceString(euler.y)}, {toNiceString(euler.z)}),";
+            res += $"new Vector3({toNiceString(tr.lossyScale.x)}, {toNiceString(tr.lossyScale.y)}, {toNiceString(tr.lossyScale.z)}),";
+            res += "new Color(0, 255, 0),";
+            if (isQuad)
+                res += "quadMesh,";
             else
-                res+= "cubeMesh,";
+                res += "cubeMesh,";
 
-            if(mr.sharedMaterial.name.Contains("WALL"))
-                res+= "wallTexture";
+            if (mr.sharedMaterial.name.Contains("WALL"))
+                res += "wallTexture";
             else
-                res+= "floorTexture";
-            res+= "),\n";
+                res += "floorTexture";
+            res += "),\n";
         }
-        Debug.Log(res);
+        res += "]";
+        System.IO.File.WriteAllText("exported.txt", res);
     }
 
     // Unity's eulerAngles cannot be handed to the rasterizer as they are.
@@ -49,7 +53,8 @@ public class Export : MonoBehaviour
     // opposite way around each axis. So instead of copying the angles across,
     // take the finished world rotation and re-decompose it into the angles that
     // rasterizer actually reproduces it from.
-    static Vector3 ToRasterizerEuler(Quaternion rotation){
+    static Vector3 ToRasterizerEuler(Quaternion rotation)
+    {
         // Columns of the rotation matrix: where each basis vector ends up.
         Vector3 right = rotation * Vector3.right;
         Vector3 up = rotation * Vector3.up;
@@ -59,16 +64,25 @@ public class Export : MonoBehaviour
         // rasterizer's flipped turn direction.
         float x, y, z;
         y = Mathf.Asin(Mathf.Clamp(forward.x, -1f, 1f));
-        if(Mathf.Abs(forward.x) < 0.999999f){
+        if (Mathf.Abs(forward.x) < 0.999999f)
+        {
             x = Mathf.Atan2(-forward.y, forward.z);
             z = Mathf.Atan2(-up.x, right.x);
         }
-        else {
+        else
+        {
             // cos(y) is 0 here, so x and z turn about the same axis and only their
             // sum is defined. Put all of it in x.
             z = 0f;
             x = Mathf.Atan2(Mathf.Sign(forward.x) * right.y, up.y);
         }
         return new Vector3(-x, -y, -z) * Mathf.Rad2Deg;
+    }
+
+    static string toNiceString(float value)
+    {
+        float r = Mathf.Round(value * 10000f) / 10000f;
+        if (r == 0f) r = 0f;
+        return r.ToString("0.####", CultureInfo.InvariantCulture);
     }
 }
